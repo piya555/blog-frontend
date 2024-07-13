@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import LogoutButton from "./Logout";
 
 const Sidebar = () => {
   const pathname = usePathname();
@@ -15,7 +16,7 @@ const Sidebar = () => {
             <Link
               href="/admin"
               className={`block py-2 px-4 rounded ${
-                isActive("/admin/dashboard") ? "bg-gray-700" : ""
+                isActive("/admin") ? "bg-gray-700" : ""
               }`}
             >
               Dashboard
@@ -73,6 +74,9 @@ const Sidebar = () => {
           </li>
         </ul>
       </nav>
+      <div className="mt-auto pt-4">
+        <LogoutButton />
+      </div>
     </aside>
   );
 };
