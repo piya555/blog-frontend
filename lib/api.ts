@@ -6,16 +6,19 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
+export const login = async (email: string, password: string) => {
+  const response = await axios.post("/api/login", { email, password });
+  console.log("API response:", response.data); // Debugging line
+  return response.data; // Assuming the response contains { token, user }
+};
+
+// Example for setting and removing auth token
 export const setAuthToken = (token: string) => {
-  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  // ด้วย token นี้ใน localStorage เพื่อให้สามารถใช้ได้หลังจาก refresh หน้า
-  localStorage.setItem("authToken", token);
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
 export const removeAuthToken = () => {
-  delete api.defaults.headers.common["Authorization"];
-  // ลบ token ออกจาก localStorage
-  localStorage.removeItem("authToken");
+  delete axios.defaults.headers.common["Authorization"];
 };
 
 // Intercept requests
@@ -40,18 +43,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Auth
-export const login = async (email: string, password: string) => {
-  try {
-    const response = await api.post("/auth/login", { email, password });
-    setAuthToken(response.data.token);
-    return response.data;
-  } catch (error) {
-    console.error("Login failed:", error);
-    throw error;
-  }
-};
 
 // Users
 export const getUsers = async () => {

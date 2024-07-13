@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export const useRequireAuth = (redirectUrl = "/login") => {
+export const useRequireAuth = (redirectUrl: string = "/login"): boolean => {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 

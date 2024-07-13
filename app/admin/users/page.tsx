@@ -35,7 +35,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { createUser, deleteUser, getUsers, updateUser } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import * as z from "zod";
@@ -61,11 +61,10 @@ const userSchema = z.object({
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user: currentUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const { user: currentUser } = useAuth();
 
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
@@ -77,11 +76,25 @@ export default function UsersPage() {
     },
   });
 
+  const fetchUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
+    } catch (error) {
+      toast.error("Failed to fetch users");
+      console.error("Error fetching users:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
+    console.log("Authentication status:", isAuthenticated); // Debugging line
     if (isAuthenticated) {
       fetchUsers();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchUsers]);
 
   useEffect(() => {
     if (editingUser) {
@@ -100,18 +113,6 @@ export default function UsersPage() {
     }
   }, [editingUser, form]);
 
-  const fetchUsers = async () => {
-    setIsLoading(true);
-    try {
-      const fetchedUsers = await getUsers();
-      setUsers(fetchedUsers);
-    } catch (error) {
-      toast.error("Failed to fetch users");
-      console.error("Error fetching users:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
     try {
       if (editingUser) {
@@ -128,6 +129,7 @@ export default function UsersPage() {
       toast.error(
         editingUser ? "Failed to update user" : "Failed to create user"
       );
+      console.error("Error submitting user:", error);
     }
   };
 
@@ -139,6 +141,7 @@ export default function UsersPage() {
         fetchUsers();
       } catch (error) {
         toast.error("Failed to delete user");
+        console.error("Error deleting user:", error);
       }
     }
   };

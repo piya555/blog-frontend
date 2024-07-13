@@ -46,6 +46,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const { token, user } = await login(values.email, values.password);
+      console.log("Login successful:", token, user); // Debugging line
       authLogin(token, user);
       toast.success("Login successful");
       router.push("/admin");

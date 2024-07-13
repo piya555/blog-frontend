@@ -24,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Check localStorage for existing session on initial load
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
     if (storedUser && storedToken) {
@@ -34,31 +33,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(parsedUser);
           setAuthToken(storedToken);
         } else {
-          // Invalid user data, clear localStorage
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
+          clearLocalStorage();
         }
       } catch (error) {
         console.error("Error parsing stored user data:", error);
-        // Clear invalid data from localStorage
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+        clearLocalStorage();
       }
     }
   }, []);
+
+  const clearLocalStorage = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  };
 
   const login = (token: string, userData: User) => {
     setUser(userData);
     setAuthToken(token);
     localStorage.setItem("token", token);
     localStorage.setItem("user", JSON.stringify(userData));
+    console.log("User logged in:", userData); // Debugging line
   };
 
   const logout = () => {
     setUser(null);
     removeAuthToken();
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearLocalStorage();
   };
 
   const value = {
