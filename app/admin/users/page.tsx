@@ -146,10 +146,6 @@ export default function UsersPage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <div>Please log in to view this page.</div>;
-  }
-
   return (
     <div className="container mx-auto py-10">
       <h1 className="text-2xl font-bold mb-5">Users Management</h1>

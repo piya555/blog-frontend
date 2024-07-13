@@ -62,13 +62,13 @@ export const deleteUser = async (id: string) => {
 };
 
 // Posts
-export const getPosts = async (page = 1, limit = 10) => {
-  const response = await api.get("/posts", { params: { page, limit } });
+export const getPosts = async () => {
+  const response = await api.get("/posts");
   return response.data;
 };
 
-export const getPost = async (slug: string) => {
-  const response = await api.get(`/posts/${slug}`);
+export const getPost = async (id: string) => {
+  const response = await api.get(`/posts/${id}`);
   return response.data;
 };
 
@@ -77,16 +77,15 @@ export const createPost = async (postData: any) => {
   return response.data;
 };
 
-export const updatePost = async (slug: string, postData: any) => {
-  const response = await api.put(`/posts/${slug}`, postData);
+export const updatePost = async (id: string, postData: any) => {
+  const response = await api.put(`/posts/${id}`, postData);
   return response.data;
 };
 
-export const deletePost = async (slug: string) => {
-  const response = await api.delete(`/posts/${slug}`);
+export const deletePost = async (id: string) => {
+  const response = await api.delete(`/posts/${id}`);
   return response.data;
 };
-
 // Categories
 export const getCategories = async () => {
   const response = await api.get("/categories");
