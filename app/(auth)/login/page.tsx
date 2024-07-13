@@ -10,7 +10,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login, setAuthToken } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { login } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -31,6 +32,7 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { login: authLogin } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,10 +45,10 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const { token } = await login(values.email, values.password);
-      setAuthToken(token);
+      const { token, user } = await login(values.email, values.password);
+      authLogin(token, user);
       toast.success("Login successful");
-      router.push("/admin");
+      router.push("/admin/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       handleLoginError(error);
