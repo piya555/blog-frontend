@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { login, setAuthToken } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -48,9 +49,31 @@ export default function LoginPage() {
       router.push("/admin/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      toast.error("Login failed. Please check your credentials.");
+      handleLoginError(error);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  function handleLoginError(error: unknown) {
+    if (error instanceof AxiosError) {
+      switch (error.response?.status) {
+        case 401:
+          toast.error("Invalid email or password. Please try again.");
+          break;
+        case 403:
+          toast.error(
+            "Your account is not authorized to access the admin panel."
+          );
+          break;
+        case 429:
+          toast.error("Too many login attempts. Please try again later.");
+          break;
+        default:
+          toast.error("An unexpected error occurred. Please try again later.");
+      }
+    } else {
+      toast.error("An unexpected error occurred. Please try again later.");
     }
   }
 
