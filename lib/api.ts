@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -6,53 +6,34 @@ const api = axios.create({
   baseURL: API_URL,
 });
 
-export const login = async (email: string, password: string) => {
-  const response = await axios.post("/api/login", { email, password });
-  console.log("API response:", response.data); // Debugging line
-  return response.data; // Assuming the response contains { token, user }
-};
-
-// Example for setting and removing auth token
 export const setAuthToken = (token: string) => {
-  axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 };
 
 export const removeAuthToken = () => {
-  delete axios.defaults.headers.common["Authorization"];
+  delete api.defaults.headers.common["Authorization"];
 };
 
-// Intercept requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("authToken");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+export const login = async (email: string, password: string) => {
+  try {
+    console.log("Sending login request to:", `${API_URL}/auth/login`);
+    console.log("Login payload:", { email, password });
+    const response = await api.post("/auth/login", { email, password });
+    console.log("Login response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(
+      "Login request failed:",
+      error.response?.data || error.message
+    );
+    throw error;
   }
-  return config;
-});
-
-// Intercept responses
-api.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Token หมดอายุหรือไม่ถูกต้อง
-      removeAuthToken();
-      // รีไดเร็กไปยังหน้า login
-      window.location.href = "/login";
-    }
-    return Promise.reject(error);
-  }
-);
+};
 
 // Users
 export const getUsers = async () => {
-  try {
-    const response = await api.get("/users");
-    return response.data;
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-    throw error;
-  }
+  const response = await api.get("/users");
+  return response.data;
 };
 
 export const getUser = async (id: string) => {

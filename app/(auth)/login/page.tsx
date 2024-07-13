@@ -1,3 +1,4 @@
+// src/app/(auth)/login/page.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -11,28 +12,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { login } from "@/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import * as z from "zod";
 
 const formSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
+  email: z.string().email({ message: "Invalid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters." }),
 });
 
 export default function LoginPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { login: authLogin } = useAuth();
+  const { login } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,48 +37,26 @@ export default function LoginPage() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { token, user } = await login(values.email, values.password);
-      console.log("Login successful:", token, user); // Debugging line
-      authLogin(token, user);
+      await login(values.email, values.password);
       toast.success("Login successful");
-      router.push("/admin");
-    } catch (error) {
+      // ไม่ต้อง reset form ที่นี่ เพราะหลังจาก login สำเร็จ เราจะ redirect ไปหน้าอื่น
+    } catch (error: any) {
       console.error("Login failed:", error);
-      handleLoginError(error);
+      toast.error(error.message || "Login failed. Please try again.");
+      // Reset เฉพาะ password field เมื่อ login ไม่สำเร็จ
+      form.reset({ password: "" }, { keepValues: true });
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function handleLoginError(error: unknown) {
-    if (error instanceof AxiosError) {
-      switch (error.response?.status) {
-        case 401:
-          toast.error("Invalid email or password. Please try again.");
-          break;
-        case 403:
-          toast.error(
-            "Your account is not authorized to access the admin panel."
-          );
-          break;
-        case 429:
-          toast.error("Too many login attempts. Please try again later.");
-          break;
-        default:
-          toast.error("An unexpected error occurred. Please try again later.");
-      }
-    } else {
-      toast.error("An unexpected error occurred. Please try again later.");
-    }
-  }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
