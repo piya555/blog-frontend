@@ -1,3 +1,4 @@
+import { IBanner } from "@/app/admin/banner/page";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -142,6 +143,28 @@ export const approveComment = async (id: string) => {
 export const deleteComment = async (id: string) => {
   const response = await api.delete(`/comments/${id}`);
   return response.data;
+};
+
+export const getBanners = async (): Promise<IBanner[]> => {
+  const response = await axios.get(`${API_URL}/banners`);
+  return response.data;
+};
+
+export const createBanner = async (bannerData: any): Promise<IBanner> => {
+  const response = await axios.post(`${API_URL}/banners`, bannerData);
+  return response.data;
+};
+
+export const updateBanner = async (
+  id: string,
+  bannerData: any
+): Promise<IBanner> => {
+  const response = await axios.put(`${API_URL}/banners/${id}`, bannerData);
+  return response.data;
+};
+
+export const deleteBanner = async (id: string): Promise<void> => {
+  await axios.delete(`${API_URL}/banners/${id}`);
 };
 
 export default api;

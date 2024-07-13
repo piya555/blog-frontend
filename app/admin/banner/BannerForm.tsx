@@ -1,34 +1,32 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Category } from "@/models/interface";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
+import { IBanner } from "./page";
 
-const categorySchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
-  description: z.string().optional(),
-  thumbnail: z.any().optional(),
+const bannerSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  imageUrl: z.string().min(1, "Image URL is required"),
+  link: z.string().optional(),
+  isActive: z.boolean().default(true),
 });
 
-type CategoryFormData = z.infer<typeof categorySchema>;
+type BannerFormData = z.infer<typeof bannerSchema>;
 
-interface CategoryFormProps {
-  initialData?: Category;
+interface BannerFormProps {
+  initialData?: IBanner;
   onSubmit: (data: FormData) => Promise<void>;
 }
 
-const CategoryForm: React.FC<CategoryFormProps> = ({
-  initialData,
-  onSubmit,
-}) => {
+const BannerForm: React.FC<BannerFormProps> = ({ initialData, onSubmit }) => {
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
-    initialData?.thumbnail ? initialData.thumbnail : null
+    initialData?.imageUrl ? initialData.imageUrl : null
   );
 
   const {
@@ -38,15 +36,15 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema),
+  } = useForm<BannerFormData>({
+    resolver: zodResolver(bannerSchema),
     defaultValues: initialData || {},
   });
 
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      setValue("thumbnail", file);
+      setValue("imageUrl", URL.createObjectURL(file));
       setThumbnailPreview(URL.createObjectURL(file));
     }
   };
@@ -59,14 +57,14 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     multiple: false,
   });
 
-  const handleFormSubmit = async (data: CategoryFormData) => {
+  const handleFormSubmit = async (data: BannerFormData) => {
     const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("slug", data.slug);
-    formData.append("description", data.description || "");
-    if (data.thumbnail instanceof File) {
-      formData.append("thumbnail", data.thumbnail);
+    formData.append("title", data.title);
+    formData.append("imageUrl", data.imageUrl);
+    if (data.link) {
+      formData.append("link", data.link);
     }
+    formData.append("isActive", data.isActive.toString());
     await onSubmit(formData);
   };
 
@@ -74,42 +72,40 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div>
         <label
-          htmlFor="name"
+          htmlFor="title"
           className="block text-sm font-medium text-gray-700"
         >
-          Name
+          Title
         </label>
-        <Input id="name" {...register("name")} className="mt-1" />
-        {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+        <Input id="title" {...register("title")} className="mt-1" />
+        {errors.title && (
+          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
         )}
       </div>
 
       <div>
         <label
-          htmlFor="slug"
+          htmlFor="imageUrl"
           className="block text-sm font-medium text-gray-700"
         >
-          Slug
+          Image URL
         </label>
-        <Input id="slug" {...register("slug")} className="mt-1" />
-        {errors.slug && (
-          <p className="mt-1 text-sm text-red-600">{errors.slug.message}</p>
+        <Input id="imageUrl" {...register("imageUrl")} className="mt-1" />
+        {errors.imageUrl && (
+          <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>
         )}
       </div>
 
       <div>
         <label
-          htmlFor="description"
+          htmlFor="link"
           className="block text-sm font-medium text-gray-700"
         >
-          Description
+          Link
         </label>
-        <Input id="description" {...register("description")} className="mt-1" />
-        {errors.description && (
-          <p className="mt-1 text-sm text-red-600">
-            {errors.description.message}
-          </p>
+        <Input id="link" {...register("link")} className="mt-1" />
+        {errors.link && (
+          <p className="mt-1 text-sm text-red-600">{errors.link.message}</p>
         )}
       </div>
 
@@ -152,21 +148,42 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
         {thumbnailPreview && (
           <div className="mt-2">
             <Image
-              src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${thumbnailPreview}`}
-              width={300}
-              height={300}
+              src={thumbnailPreview}
               alt="Thumbnail preview"
+              width={100}
+              height={100}
               className="h-32 w-32 object-cover"
             />
           </div>
         )}
       </div>
 
+      <div className="flex items-center">
+        <label
+          htmlFor="isActive"
+          className="block text-sm font-medium text-gray-700 mr-2"
+        >
+          Active
+        </label>
+        <Controller
+          name="isActive"
+          control={control}
+          render={({ field }) => (
+            <input
+              type="checkbox"
+              className="form-checkbox"
+              checked={field.value}
+              onChange={field.onChange}
+            />
+          )}
+        />
+      </div>
+
       <Button type="submit">
-        {initialData ? "Update Category" : "Create Category"}
+        {initialData ? "Update Banner" : "Create Banner"}
       </Button>
     </form>
   );
 };
 
-export default CategoryForm;
+export default BannerForm;

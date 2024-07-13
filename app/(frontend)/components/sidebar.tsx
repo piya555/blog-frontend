@@ -23,6 +23,16 @@ const Sidebar = () => {
           </li>
           <li>
             <Link
+              href="/admin/banner"
+              className={`block py-2 px-4 rounded ${
+                isActive("/admin/banner") ? "bg-gray-700" : ""
+              }`}
+            >
+              Banner
+            </Link>
+          </li>
+          <li>
+            <Link
               href="/admin/users"
               className={`block py-2 px-4 rounded ${
                 isActive("/admin/users") ? "bg-gray-700" : ""

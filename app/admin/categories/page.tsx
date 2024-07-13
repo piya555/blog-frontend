@@ -15,9 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteCategory, getCategories } from "@/lib/api";
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+  updateCategory,
+} from "@/lib/api";
 import { Category } from "@/models/interface";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import CategoryForm from "./CategoryForm";
@@ -26,7 +30,6 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     fetchCategories();
@@ -56,10 +59,21 @@ export default function CategoriesPage() {
   };
 
   const handleCategorySubmit = async (data: FormData) => {
-    // Implement submit logic here
-    fetchCategories();
-    setIsDialogOpen(false);
-    setEditingCategory(null);
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.slug as string, data);
+        toast.success("Category updated successfully");
+      } else {
+        await createCategory(data);
+        toast.success("Category created successfully");
+      }
+      await fetchCategories();
+      setIsDialogOpen(false);
+      setEditingCategory(null);
+    } catch (error) {
+      toast.error("Failed to submit category");
+      console.error("Error submitting category:", error);
+    }
   };
 
   return (
