@@ -48,7 +48,7 @@ export default function LoginPage() {
       const { token, user } = await login(values.email, values.password);
       authLogin(token, user);
       toast.success("Login successful");
-      router.push("/admin/dashboard");
+      router.push("/admin");
     } catch (error) {
       console.error("Login failed:", error);
       handleLoginError(error);

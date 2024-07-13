@@ -61,6 +61,7 @@ const userSchema = z.object({
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const { isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -77,8 +78,10 @@ export default function UsersPage() {
   });
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (isAuthenticated) {
+      fetchUsers();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (editingUser) {
@@ -104,11 +107,11 @@ export default function UsersPage() {
       setUsers(fetchedUsers);
     } catch (error) {
       toast.error("Failed to fetch users");
+      console.error("Error fetching users:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
   const onSubmit = async (data: z.infer<typeof userSchema>) => {
     try {
       if (editingUser) {
@@ -139,6 +142,10 @@ export default function UsersPage() {
       }
     }
   };
+
+  if (!isAuthenticated) {
+    return <div>Please log in to view this page.</div>;
+  }
 
   return (
     <div className="container mx-auto py-10">

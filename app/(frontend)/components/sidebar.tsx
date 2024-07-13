@@ -13,9 +13,9 @@ const Sidebar = () => {
         <ul>
           <li>
             <Link
-              href="/admin/dashboard"
+              href="/admin"
               className={`block py-2 px-4 rounded ${
-                isActive("/admin/dashboard") ? "bg-gray-700" : ""
+                isActive("/admin") ? "bg-gray-700" : ""
               }`}
             >
               Dashboard
