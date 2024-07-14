@@ -167,4 +167,32 @@ export const deleteBanner = async (id: string): Promise<void> => {
   await axios.delete(`${API_URL}/banners/${id}`);
 };
 
+export const getPages = async () => {
+  const response = await api.get("/pages");
+  return response.data;
+};
+
+export const createPage = async (pageData: FormData) => {
+  const response = await api.post("/pages", pageData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const updatePage = async (id: string, pageData: FormData) => {
+  const response = await api.put(`/pages/${id}`, pageData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const deletePage = async (id: string) => {
+  const response = await api.delete(`/pages/${id}`);
+  return response.data;
+};
+
 export default api;
